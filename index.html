@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#090b0a" />
+    <meta name="color-scheme" content="dark" />
+    <title>EnergyApp — Энергия</title>
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="vendor/chart.umd.js"></script>
+    <script defer src="data.js"></script>
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <span class="brand"><img src="icon.svg" alt="" width="34" height="34" />Energy<span>App</span></span>
+        <div class="header-tools">
+          <button
+            class="icon-btn"
+            type="button"
+            data-action="inbox"
+            aria-label="Уведомления"
+            id="inbox-button">
+          </button>
+        </div>
+      </div>
+    </header>
+    <main id="main">
+      <!-- ЭНЕРГИЯ. Тексты и порядок карточек можно менять здесь. -->
+      <section class="view" id="energy" aria-label="Энергия">
+        <div class="page-heading"><h1 data-value="greeting"></h1></div>
+        <div class="data-content">
+          <article class="hero card">
+            <div class="hero-body">
+              <div id="ring-slot"></div>
+              <div class="hero-copy">
+                <h2 data-value="level"></h2>
+                <p id="energy-description" hidden></p>
+                <div class="week-wrap">
+                  <div class="week-label">
+                    <span>Последние 7 дней</span>
+                    <button data-page="stats" aria-label="Открыть статистику">
+                      <svg class="icon" aria-hidden="true"><use href="#i-arrow-up-right"></use></svg>
+                    </button>
+                  </div>
+                  <div id="week-slot"></div>
+                </div>
+              </div>
+            </div>
+          </article>
+          <div class="overview-grid">
+            <section>
+              <div class="section-head"><h2>Показатели</h2></div>
+              <div class="metrics-grid">
+                <button class="metric card" data-metric="sleep">
+                  <span class="metric-head">
+                    <span class="badge-icon purple">
+                      <svg class="icon" aria-hidden="true"><use href="#i-moon"></use></svg></span>
+                    <span>Сон</span>
+                    <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-right"></use></svg>
+                  </span>
+                  <span class="metric-main"><strong></strong><span class="spark-slot"></span></span>
+                  <span class="metric-note"></span>
+                </button>
+                <button class="metric card" data-metric="recovery">
+                  <span class="metric-head">
+                    <span class="badge-icon green">
+                      <svg class="icon" aria-hidden="true"><use href="#i-heart-pulse"></use></svg></span>
+                    <span>Восстановление</span>
+                    <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-right"></use></svg>
+                  </span>
+                  <span class="metric-main"><strong></strong><span class="spark-slot"></span></span>
+                  <span class="metric-note"></span>
+                </button>
+                <button class="metric card" data-metric="steps">
+                  <span class="metric-head">
+                    <span class="badge-icon blue">
+                      <svg class="icon" aria-hidden="true"><use href="#i-footprints"></use></svg></span>
+                    <span>Активность</span>
+                    <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-right"></use></svg>
+                  </span>
+                  <span class="metric-main"><strong></strong><span class="spark-slot"></span></span>
+                  <span class="metric-note"></span>
+                </button>
+                <button class="metric card" data-metric="stress">
+                  <span class="metric-head">
+                    <span class="badge-icon amber">
+                      <svg class="icon" aria-hidden="true"><use href="#i-waves"></use></svg></span>
+                    <span>Стресс</span>
+                    <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-right"></use></svg>
+                  </span>
+                  <span class="metric-main"><strong></strong><span class="spark-slot"></span></span>
+                  <span class="metric-note"></span>
+                </button>
+              </div>
+            </section>
+            <section>
+              <div class="section-head"><h2>Рекомендации дня</h2></div>
+              <div class="card rec-list" id="recommendations"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+      <!-- СТАТИСТИКА. У каждого показателя есть своё поле и свой холст для графика. -->
+      <section class="view" id="stats" aria-label="Статистика" hidden>
+        <div class="page-heading"><h1>Статистика</h1></div>
+        <div class="data-content">
+          <div class="period-switch" aria-label="Период статистики">
+            <button data-period="1">День</button>
+            <button data-period="7">Неделя</button>
+            <button data-period="30">Месяц</button>
+            <button data-period="365">Год</button>
+          </div>
+          <article class="card chart-card">
+            <div class="chart-heading">
+              <div>
+                <span class="kicker">Средняя энергия <span data-value="period"></span></span>
+                <h2><span data-value="average"></span><small>%</small></h2>
+              </div>
+              <span class="pill" id="period-change"></span>
+            </div>
+            <p class="sub" data-value="range"></p>
+            <div class="chart-big">
+              <canvas id="energy-chart" role="img" aria-label="График энергии"></canvas>
+            </div>
+            <p class="chart-caption" id="annual-note" hidden>
+              Точки показывают среднее по доступным дням каждого месяца.
+            </p>
+          </article>
+          <div class="section-head"><h2>Показатели периода</h2></div>
+          <div class="stats-metrics">
+            <article class="card stat-metric">
+              <div class="metric-head">
+                <span class="badge-icon purple">
+                  <svg class="icon" aria-hidden="true"><use href="#i-moon"></use></svg>
+                </span>
+                <h3>Сон</h3>
+              </div>
+              <span class="stat-value" data-value="sleep"></span>
+
+              <div class="small-chart"><canvas id="chart-sleep" role="img" aria-label="Сон"></canvas></div>
+            </article>
+            <article class="card stat-metric">
+              <div class="metric-head">
+                <span class="badge-icon green">
+                  <svg class="icon" aria-hidden="true"><use href="#i-heart-pulse"></use></svg>
+                </span>
+                <h3>Восстановление</h3>
+              </div>
+              <span class="stat-value" data-value="recovery"></span>
+
+              <div class="small-chart">
+                <canvas id="chart-recovery" role="img" aria-label="Восстановление"></canvas>
+              </div>
+            </article>
+            <article class="card stat-metric">
+              <div class="metric-head">
+                <span class="badge-icon blue">
+                  <svg class="icon" aria-hidden="true"><use href="#i-footprints"></use></svg>
+                </span>
+                <h3>Активность</h3>
+              </div>
+              <span class="stat-value" data-value="steps"></span>
+              <span class="sub" id="step-unit">шагов в среднем</span>
+              <div class="small-chart">
+                <canvas id="chart-steps" role="img" aria-label="Активность"></canvas>
+              </div>
+            </article>
+            <article class="card stat-metric">
+              <div class="metric-head">
+                <span class="badge-icon amber">
+                  <svg class="icon" aria-hidden="true"><use href="#i-waves"></use></svg>
+                </span>
+                <h3>Стресс</h3>
+              </div>
+              <span class="stat-value" data-value="stress"></span>
+
+              <div class="small-chart">
+                <canvas id="chart-stress" role="img" aria-label="Стресс"></canvas>
+              </div>
+            </article>
+          </div>
+          <div class="stats-bottom">
+            <section>
+              <div class="section-head">
+                <h2>История дней</h2>
+                <span data-value="dayCount"></span>
+              </div>
+              <div class="card list-padding">
+                <div id="history-list"></div>
+                <button class="more" data-action="more">Показать ещё</button>
+              </div>
+            </section>
+            <section>
+              <div class="section-head"><h2>Итоги периода</h2></div>
+              <div class="card list-padding">
+                <div class="data-row"><span>Лучшая энергия</span><b data-value="best"></b></div>
+                <div class="data-row"><span>Самая низкая</span><b data-value="worst"></b></div>
+                <div class="data-row"><span>Средняя энергия</span><b data-value="mean"></b></div>
+                <div class="data-row"><span>Самый долгий сон</span><b data-value="longest"></b></div>
+                <div class="data-row"><span>Всего шагов</span><b data-value="total"></b></div>
+                <div class="data-row"><span>Тренировки</span><b data-value="training"></b></div>
+                <div class="data-row"><span>Активные калории</span><b data-value="calories"></b></div>
+                <div class="data-row"><span>К прошлому периоду</span><b data-value="change"></b></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+      <!-- ПРОФИЛЬ. Названия полей, разделы и кнопки настроек. -->
+      <section class="view" id="profile" aria-label="Профиль" hidden>
+        <div class="page-heading">
+          <h1>Профиль</h1>
+        </div>
+        <div class="profile-grid">
+          <div>
+            <article class="card identity">
+              <div class="avatar" data-value="initials"></div>
+              <div><h2 data-value="name"></h2></div>
+              <button class="icon-btn" aria-label="Редактировать профиль" data-action="edit">
+                <svg class="icon" aria-hidden="true"><use href="#i-pencil"></use></svg>
+              </button>
+            </article>
+            <div class="card list-padding personal">
+              <div class="data-row"><span>Возраст</span><b data-value="age"></b></div>
+              <div class="data-row"><span>Рост</span><b data-value="height"></b></div>
+              <div class="data-row"><span>Вес</span><b data-value="weight"></b></div>
+            </div>
+            <div class="section-head"><h2>Мои цели</h2></div>
+            <div class="card list-padding">
+              <div class="data-row"><span>Шаги за день</span><b data-value="steps"></b></div>
+              <div class="data-row"><span>Сон за ночь</span><b data-value="sleep"></b></div>
+              <div class="data-row"><span>Восстановление</span><b data-value="recovery"></b></div>
+              <button data-action="goals" class="more">Изменить цели</button>
+            </div>
+          </div>
+          <section>
+            <div class="section-head"><h2>Настройки</h2></div>
+            <div class="card list-padding">
+              <button class="settings-row" data-action="notice-prefs">
+                <svg class="icon" aria-hidden="true"><use href="#i-bell"></use></svg>
+                <strong>Уведомления</strong>
+                <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-right"></use></svg>
+              </button>
+              <button class="settings-row" data-action="appearance">
+                <svg class="icon" aria-hidden="true"><use href="#i-palette"></use></svg>
+                <strong>Внешний вид</strong>
+                <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-right"></use></svg>
+              </button>
+              <button class="settings-row" data-action="privacy">
+                <svg class="icon" aria-hidden="true"><use href="#i-shield"></use></svg>
+                <strong>Конфиденциальность</strong>
+                <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-right"></use></svg>
+              </button>
+              <button class="settings-row" data-action="data">
+                <svg class="icon" aria-hidden="true"><use href="#i-database"></use></svg>
+                <strong>Данные приложения</strong>
+                <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-right"></use></svg>
+              </button>
+              <button class="settings-row" data-action="about">
+                <svg class="icon" aria-hidden="true"><use href="#i-info"></use></svg>
+                <strong>О приложении</strong><small>1.0</small>
+                <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-right"></use></svg>
+              </button>
+            </div>
+            <button class="quiet logout" data-action="logout">
+              <svg class="icon" aria-hidden="true"><use href="#i-log-out"></use></svg>Выйти из демопрофиля
+            </button>
+          </section>
+        </div>
+      </section>
+    </main>
+    <nav class="dock" aria-label="Основная навигация">
+      <button type="button" data-page="stats">
+        <svg aria-hidden="true"><use href="#i-chart-no-axes-column"></use></svg>Статистика
+      </button>
+      <button type="button" data-page="energy" aria-current="page">
+        <svg aria-hidden="true"><use href="#i-zap"></use></svg>Энергия
+      </button>
+      <button type="button" data-page="profile">
+        <svg aria-hidden="true"><use href="#i-user-round"></use></svg>Профиль
+      </button>
+    </nav>
+    <dialog id="sheet" aria-labelledby="sheet-title">
+      <div class="sheet-inner">
+        <div class="sheet-grip"></div>
+        <div id="sheet-content"></div>
+      </div>
+    </dialog>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <noscript>Для работы EnergyApp включи JavaScript в браузере.</noscript>
+    <!-- Набор иконок интерфейса -->
+    <svg class="symbols" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <symbol id="i-activity" viewBox="0 0 24 24">
+          <path
+            d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"
+          />
+        </symbol>
+        <symbol id="i-arrow-up-right" viewBox="0 0 24 24">
+          <path d="M7 7h10v10" />
+          <path d="M7 17 17 7" />
+        </symbol>
+        <symbol id="i-bell" viewBox="0 0 24 24">
+          <path d="M10.268 21a2 2 0 0 0 3.464 0" />
+          <path
+            d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"
+          />
+        </symbol>
+        <symbol id="i-calendar" viewBox="0 0 24 24">
+          <path d="M8 2v4" />
+          <path d="M16 2v4" />
+          <rect width="18" height="18" x="3" y="4" rx="2" />
+          <path d="M3 10h18" />
+        </symbol>
+        <symbol id="i-chart-no-axes-column" viewBox="0 0 24 24">
+          <path d="M5 21v-6" />
+          <path d="M12 21V3" />
+          <path d="M19 21V9" />
+        </symbol>
+        <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol>
+        <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol>
+        <symbol id="i-circle-check" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="m9 12 2 2 4-4" />
+        </symbol>
+        <symbol id="i-clock" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 6v6l4 2" />
+        </symbol>
+        <symbol id="i-database" viewBox="0 0 24 24">
+          <ellipse cx="12" cy="5" rx="9" ry="3" />
+          <path d="M3 5V19A9 3 0 0 0 21 19V5" />
+          <path d="M3 12A9 3 0 0 0 21 12" />
+        </symbol>
+        <symbol id="i-droplet" viewBox="0 0 24 24">
+          <path
+            d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"
+          />
+        </symbol>
+        <symbol id="i-dumbbell" viewBox="0 0 24 24">
+          <path
+            d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"
+          />
+          <path d="m2.5 21.5 1.4-1.4" />
+          <path d="m20.1 3.9 1.4-1.4" />
+          <path
+            d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"
+          />
+          <path d="m9.6 14.4 4.8-4.8" />
+        </symbol>
+        <symbol id="i-footprints" viewBox="0 0 24 24">
+          <path
+            d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"
+          />
+          <path
+            d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"
+          />
+          <path d="M16 17h4" />
+          <path d="M4 13h4" />
+        </symbol>
+        <symbol id="i-heart-pulse" viewBox="0 0 24 24">
+          <path
+            d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"
+          />
+          <path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27" />
+        </symbol>
+        <symbol id="i-history" viewBox="0 0 24 24">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+          <path d="M3 3v5h5" />
+          <path d="M12 7v5l4 2" />
+        </symbol>
+        <symbol id="i-info" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 16v-4" />
+          <path d="M12 8h.01" />
+        </symbol>
+        <symbol id="i-leaf" viewBox="0 0 24 24">
+          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+          <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+        </symbol>
+        <symbol id="i-log-out" viewBox="0 0 24 24">
+          <path d="m16 17 5-5-5-5" />
+          <path d="M21 12H9" />
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        </symbol>
+        <symbol id="i-moon" viewBox="0 0 24 24">
+          <path
+            d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"
+          />
+        </symbol>
+        <symbol id="i-palette" viewBox="0 0 24 24">
+          <path
+            d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"
+          />
+          <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+          <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+          <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+          <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+        </symbol>
+        <symbol id="i-pencil" viewBox="0 0 24 24">
+          <path
+            d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
+          />
+          <path d="m15 5 4 4" />
+        </symbol>
+        <symbol id="i-refresh-cw" viewBox="0 0 24 24">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+          <path d="M21 3v5h-5" />
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+          <path d="M8 16H3v5" />
+        </symbol>
+        <symbol id="i-shield" viewBox="0 0 24 24">
+          <path
+            d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+          />
+        </symbol>
+        <symbol id="i-sparkles" viewBox="0 0 24 24">
+          <path
+            d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"
+          />
+          <path d="M20 2v4" />
+          <path d="M22 4h-4" />
+          <circle cx="4" cy="20" r="2" />
+        </symbol>
+        <symbol id="i-sun" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2" />
+          <path d="M12 20v2" />
+          <path d="m4.93 4.93 1.41 1.41" />
+          <path d="m17.66 17.66 1.41 1.41" />
+          <path d="M2 12h2" />
+          <path d="M20 12h2" />
+          <path d="m6.34 17.66-1.41 1.41" />
+          <path d="m19.07 4.93-1.41 1.41" />
+        </symbol>
+        <symbol id="i-target" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <circle cx="12" cy="12" r="6" />
+          <circle cx="12" cy="12" r="2" />
+        </symbol>
+        <symbol id="i-timer" viewBox="0 0 24 24">
+          <line x1="10" x2="14" y1="2" y2="2" />
+          <line x1="12" x2="15" y1="14" y2="11" />
+          <circle cx="12" cy="14" r="8" />
+        </symbol>
+        <symbol id="i-trash-2" viewBox="0 0 24 24">
+          <path d="M10 11v6" />
+          <path d="M14 11v6" />
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+          <path d="M3 6h18" />
+          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+        </symbol>
+        <symbol id="i-user-round" viewBox="0 0 24 24">
+          <circle cx="12" cy="8" r="5" />
+          <path d="M20 21a8 8 0 0 0-16 0" />
+        </symbol>
+        <symbol id="i-waves" viewBox="0 0 24 24">
+          <path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+          <path
+            d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"
+          />
+          <path
+            d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"
+          />
+        </symbol>
+        <symbol id="i-wind" viewBox="0 0 24 24">
+          <path d="M12.8 19.6A2 2 0 1 0 14 16H2" />
+          <path d="M17.5 8a2.5 2.5 0 1 1 2 4H2" />
+          <path d="M9.8 4.4A2 2 0 1 1 11 8H2" />
+        </symbol>
+        <symbol id="i-x" viewBox="0 0 24 24">
+          <path d="M18 6 6 18" />
+          <path d="m6 6 12 12" />
+        </symbol>
+        <symbol id="i-zap" viewBox="0 0 24 24">
+          <path
+            d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"
+          />
+        </symbol>
+      </defs>
+    </svg>
+  </body>
+</html>
